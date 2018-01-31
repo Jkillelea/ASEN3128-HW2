@@ -1,6 +1,7 @@
 % ASEN 3128, Jacob Killelea, HW 2
 % Quadcopter data visualization
 clear; close all; clc;
+addpath(genpath('util'));
 
 load('RSdata.mat'); % [rt_tout, rt_yout]
 
