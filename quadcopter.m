@@ -24,7 +24,6 @@ function results = quadcopter(t, y)
   q      = omega(2); % pitch rate
   r      = omega(3); % yaw   rate
 
-  % HAHAHAHAH WHATS OUR VECTOR VICTOR HAHAHAHAHA
   Qeb = R3(-psi)*R2(-theta)*R1(-phi); % transform body vector to inertial vector
   Qbe = R3(psi)*R2(theta)*R1(phi);    % transform inertial vector to body vector
 
@@ -66,9 +65,5 @@ function results = quadcopter(t, y)
 
   dpose = [dphi; dtheta; dpsi];
 
-
   results = [dr; dvel; dpose; domega];
-
-
-  % results = zeros(12, 1);
 end
