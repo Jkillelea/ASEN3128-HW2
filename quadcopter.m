@@ -9,27 +9,26 @@ function results = quadcopter(t, y)
   Iy = 9.2e-5;
   Iz = 1.35e-4;
 
-  x     = y(1:3);   % position
-  dx    = y(4:6);   % velocity
-  pose  = y(7:9);   % roll pitch yaw
-  dpose = y(10:12); % angular velocity (inertial)
+  r     = y(1:3);   % inertial position
+  vel   = y(4:6);   % body velocity
+  pose  = y(7:9);   % roll, pitch, yaw (inertial)
+  omega = y(10:12); % body angular velocity
 
-  phi   = pose(1);  % roll
-  theta = pose(2);  % pitch
-  psi   = pose(3);  % yaw
+  u      = vel(1);   % body x velocity
+  v      = vel(2);   % body y velocity
+  w      = vel(3);   % body z velocity
+  phi    = pose(1);  % roll  (inertial)
+  theta  = pose(2);  % pitch (inertial)
+  psi    = pose(3);  % yaw   (inertial)
+  p      = omega(1); % roll  rate
+  q      = omega(2); % pitch rate
+  r      = omega(3); % yaw   rate
 
-  Q = R1(phi)*R2(theta)*R3(psi); % direction cosine matrix
+  % HAHAHAHAH WHATS OUR VECTOR VICTOR HAHAHAHAHA
+  Qeb = R3(-psi)*R2(-theta)*R1(-phi); % transform body vector to inertial vector
+  Qbe = R3(psi)*R2(theta)*R1(phi);    % transform inertial vector to body vector
 
-  % CHECK this
-  vel = Q * dx; % body frame translational velocity
-  u = vel(1);
-  v = vel(2);
-  w = vel(3);
-
-  omega = Q * dpose; % body frame angular velocity
-  p = omega(1);
-  q = omega(2);
-  r = omega(3);
+  dr = Qeb * vel; % inertial velocity is the change in position vector
 
   % TODO -> define these guys
   control_force = [0; 0; 0];
@@ -45,21 +44,31 @@ function results = quadcopter(t, y)
   vdot_E = Y/m + g*cos(theta)*sin(phi) + p*w - r*u;
   wdot_E = Z/m + g*cos(theta)*cos(phi) + q*u - p*v;
 
-  ddx = (Q^-1) * [udot_E; vdot_E; wdot_E]; % inertial acceleration
+  dvel = [udot_E; vdot_E; wdot_E];
 
-  % equations (4.7, 4)
-  xdot_E = u*cos(theta)*cos(psi)                                             ...
-         + v*(sin(phi)*sin(theta)*cos(psi) - cos(phi)*sin(psi))              ...
-         + w*(cos(phi)*sin(theta)*cos(psi) + sin(phi)*sin(psi));
-  ydot_E = u*cos(psi)                                                        ...
-         + v*(sin(phi)*sin(theta)*sin(psi) + cos(phi)*cos(psi))              ...
-         + w*(cos(phi)*sin(theta)*sin(psi) - sin(theta)*cos(psi));
-  zdot_E = -u*sin(theta)                                                     ...
-         + v*sin(phi)*cos(theta)                                             ...
-         + w*cos(phi)*cos(theta);
+  % TODO
+  aero_moment = [0; 0; 0];
+  L = aero_moment(1);
+  M = aero_moment(2);
+  N = aero_moment(3);
 
-  dx = [xdot_E; ydot_E; zdot_E]; % inertial velocity
+  % equations (4.7, 2)
+  pdot = (L - q*r*(Iz - Iy))/Ix; % angular accelerations in the body frame
+  qdot = (M - r*p*(Ix - Iz))/Iy;
+  rdot = (N - p*q*(Iy - Ix))/Iz;
 
-  % results = [dx; ddx; dpose; ddpose];
-  results = zeros(12, 1);
+  domega = [pdot; qdot; rdot];
+
+  % equations (4.7, 3)
+  dphi   = p + (q*sin(phi) + r*cos(phi))*tan(theta);
+  dtheta = q*cos(phi) - r*sin(phi);
+  dpsi   = (q*sin(phi) + r*cos(phi))*sec(theta);
+
+  dpose = [dphi; dtheta; dpsi];
+
+
+  results = [dr; dvel; dpose; domega];
+
+
+  % results = zeros(12, 1);
 end
