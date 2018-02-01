@@ -9,7 +9,7 @@ tmax = 10; % seconds
 
 % inital position, velocity
 x0  = [0 0 0];
-dx0 = [1 0 0];
+dx0 = [0 0 0];
 
 % pose (x, y, z rotation), and angular velocity
 pose0  = [0 0 0];
