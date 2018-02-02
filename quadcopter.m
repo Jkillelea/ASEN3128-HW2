@@ -1,37 +1,51 @@
 % quadcopter physics simulation
 function results = quadcopter(t, y)
 
-  m  = 0.068; % kg
-  g  = 9.81;  % m/s^2
-  d  = 0.06;  % m
+  m = 0.068;     % kg
+  g = 9.81;      % m/s^2
+  d = 0.06;      % m
+  r = d/sqrt(2); % lateral distance from fan to CM, m
+  k = 0.0024;
 
   Ix = 6.8e-5; % moments of inertia about the body axes
   Iy = 9.2e-5;
   Iz = 1.35e-4;
 
+  % Lateral and Vertical coefficients of drag
+  CdLat  = 1e-3; % I don't know what the fancy greek symbol for this is.
+  CdVert = 3e-3;
+
+  % aerodynamic Moment coefficients
+  alpha = 2e-6;
+  beta  = 1e-6;
+
   r     = y(1:3);   % inertial position
   vel   = y(4:6);   % body velocity
-  pose  = y(7:9);   % roll, pitch, yaw (inertial)
+  pose  = y(7:9);   % roll, pitch, yaw (euler angles)
   omega = y(10:12); % body angular velocity
 
-  u      = vel(1);   % body x velocity
-  v      = vel(2);   % body y velocity
-  w      = vel(3);   % body z velocity
-  phi    = pose(1);  % roll  (inertial)
-  theta  = pose(2);  % pitch (inertial)
-  psi    = pose(3);  % yaw   (inertial)
-  p      = omega(1); % roll  rate
-  q      = omega(2); % pitch rate
-  r      = omega(3); % yaw   rate
+  u     = vel(1);   % body x velocity
+  v     = vel(2);   % body y velocity
+  w     = vel(3);   % body z velocity
+  phi   = pose(1);  % roll  (euler angle)
+  theta = pose(2);  % pitch (euler angle)
+  psi   = pose(3);  % yaw   (euler angle)
+  p     = omega(1); % roll  rate
+  q     = omega(2); % pitch rate
+  r     = omega(3); % yaw   rate
 
   Qeb = R3(-psi)*R2(-theta)*R1(-phi); % transform body vector to inertial vector
   Qbe = R3(psi)*R2(theta)*R1(phi);    % transform inertial vector to body vector
 
   dr = Qeb * vel; % inertial velocity is the change in position vector
 
-  % TODO -> define these guys
+  % TODO -> define this
   control_force = [0; 0; 0];
-  air_force     = [0; 0; 0];
+
+  % aerodynamic drag
+  air_force = [ -CdLat*(u^2)*sign(u);
+                -CdLat*(v^2)*sign(v);
+                -CdVert*(w^2)*sign(w) ];
 
   aerodynamic_forces = control_force + air_force;
   X = aerodynamic_forces(1);
@@ -43,27 +57,34 @@ function results = quadcopter(t, y)
   vdot_E = Y/m + g*cos(theta)*sin(phi) + p*w - r*u;
   wdot_E = Z/m + g*cos(theta)*cos(phi) + q*u - p*v;
 
-  dvel = [udot_E; vdot_E; wdot_E];
+  dvel = [udot_E; vdot_E; wdot_E]; % change in u, v, and w
 
-  % TODO
-  aero_moment = [0; 0; 0];
-  L = aero_moment(1);
-  M = aero_moment(2);
-  N = aero_moment(3);
+  % TODO -> this
+  control_moment = [0; 0; 0];
+
+  % aerodynamic moment
+  aero_moment = [ -alpha*(p^2)*sign(p);
+                  -alpha*(q^2)*sign(q);
+                  -beta*(r^2)*sign(r) ];
+
+  moments = control_moment + aero_moment;
+  L = moments(1);
+  M = moments(2);
+  N = moments(3);
 
   % equations (4.7, 2)
   pdot = (L - q*r*(Iz - Iy))/Ix; % angular accelerations in the body frame
   qdot = (M - r*p*(Ix - Iz))/Iy;
   rdot = (N - p*q*(Iy - Ix))/Iz;
 
-  domega = [pdot; qdot; rdot];
+  domega = [pdot; qdot; rdot]; % change in p, q, and r
 
   % equations (4.7, 3)
   dphi   = p + (q*sin(phi) + r*cos(phi))*tan(theta);
   dtheta = q*cos(phi) - r*sin(phi);
   dpsi   = (q*sin(phi) + r*cos(phi))*sec(theta);
 
-  dpose = [dphi; dtheta; dpsi];
+  dpose = [dphi; dtheta; dpsi]; % change in phi, theta, and psi
 
   results = [dr; dvel; dpose; domega];
 end
