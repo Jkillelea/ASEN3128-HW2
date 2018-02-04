@@ -1,6 +1,5 @@
 % quadcopter physics simulation
-function results = quadcopter(t, y)
-
+function results = quadcopter(t, y, opts)
   m = 0.068;     % kg
   g = 9.81;      % m/s^2
   d = 0.06;      % m
@@ -24,6 +23,9 @@ function results = quadcopter(t, y)
   pose  = y(7:9);   % roll, pitch, yaw (euler angles)
   omega = y(10:12); % body angular velocity
 
+  aero  = opts.aero; % aerodynamic drag and moments
+  control_motor = opts.control_motor; % whether motors just balance weight
+
   u     = vel(1);   % body x velocity
   v     = vel(2);   % body y velocity
   w     = vel(3);   % body z velocity
@@ -34,18 +36,31 @@ function results = quadcopter(t, y)
   q     = omega(2); % pitch rate
   r     = omega(3); % yaw   rate
 
+  if control_motor
+    [f1, f2, f3, f4] = motor_control(m, g, y);
+  else
+    f1 = m*g/4;
+    f2 = m*g/4;
+    f3 = m*g/4;
+    f4 = m*g/4;
+  end
+
   Qeb = R3(-psi)*R2(-theta)*R1(-phi); % transform body vector to inertial vector
   Qbe = R3(psi)*R2(theta)*R1(phi);    % transform inertial vector to body vector
 
   dr = Qeb * vel; % inertial velocity is the change in position vector
 
   % TODO -> define this
-  control_force = [0; 0; 0];
+  control_force = [0; 0; (-f1 - f2 - f3 - f4)];
 
   % aerodynamic drag
-  air_force = [ -CdLat*(u^2)*sign(u);
-                -CdLat*(v^2)*sign(v);
-                -CdVert*(w^2)*sign(w) ];
+  if aero
+    air_force = [ -CdLat*(u^2)*sign(u);
+                  -CdLat*(v^2)*sign(v);
+                  -CdVert*(w^2)*sign(w) ];
+  else
+    air_force = [0; 0; 0];
+  end
 
   aerodynamic_forces = control_force + air_force;
   X = aerodynamic_forces(1);
@@ -60,12 +75,18 @@ function results = quadcopter(t, y)
   dvel = [udot_E; vdot_E; wdot_E]; % change in u, v, and w
 
   % TODO -> this
-  control_moment = [0; 0; 0];
+  control_moment = [r*(f2 + f3 - f1 - f4);
+                    r*(-f1 - f2 + f3 + f4);
+                    k*(f2 + f4 - f1 - f3) ];
 
   % aerodynamic moment
-  aero_moment = [ -alpha*(p^2)*sign(p);
-                  -alpha*(q^2)*sign(q);
-                  -beta*(r^2)*sign(r) ];
+  if aero
+    aero_moment = [ -alpha*(p^2)*sign(p);
+                    -alpha*(q^2)*sign(q);
+                    -beta*(r^2)*sign(r) ];
+  else
+    aero_moment = [0; 0; 0];    
+  end
 
   moments = control_moment + aero_moment;
   L = moments(1);
