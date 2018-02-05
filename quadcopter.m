@@ -2,9 +2,9 @@
 function results = quadcopter(t, y, opts)
   m = 0.068;     % kg
   g = 9.81;      % m/s^2
+  k = 0.0024;    % m
   d = 0.06;      % m
-  r = d/sqrt(2); % lateral distance from fan to CM, m
-  k = 0.0024;
+  r_dist = d/sqrt(2); % lateral distance from fan to CM, m
 
   Ix = 6.8e-5; % moments of inertia about the body axes
   Iy = 9.2e-5;
@@ -18,7 +18,7 @@ function results = quadcopter(t, y, opts)
   alpha = 2e-6;
   beta  = 1e-6;
 
-  r     = y(1:3);   % inertial position
+  % r     = y(1:3);   % inertial position
   vel   = y(4:6);   % body velocity
   pose  = y(7:9);   % roll, pitch, yaw (euler angles)
   omega = y(10:12); % body angular velocity
@@ -73,17 +73,17 @@ function results = quadcopter(t, y, opts)
 
   dvel = [udot_E; vdot_E; wdot_E]; % change in u, v, and w
 
-  control_moment = [r*(f2 + f3 - f1 - f4);
-                    r*(-f1 - f2 + f3 + f4);
-                    k*(f2 + f4 - f1 - f3) ];
+  control_moment = [ r_dist*( f2 + f3 - f1 - f4);
+                     r_dist*(-f1 - f2 + f3 + f4);
+                          k*( f2 + f4 - f1 - f3) ];
 
   % aerodynamic moment
   if aero
     aero_moment = [ -alpha*(p^2)*sign(p);
                     -alpha*(q^2)*sign(q);
-                    -beta*(r^2)*sign(r) ];
+                     -beta*(r^2)*sign(r) ];
   else
-    aero_moment = [0; 0; 0];    
+    aero_moment = [0; 0; 0];
   end
 
   moments = control_moment + aero_moment;
