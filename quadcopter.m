@@ -50,7 +50,6 @@ function results = quadcopter(t, y, opts)
 
   dr = Qeb * vel; % inertial velocity is the change in position vector
 
-  % TODO -> define this
   control_force = [0; 0; (-f1 - f2 - f3 - f4)];
 
   % aerodynamic drag
@@ -74,7 +73,6 @@ function results = quadcopter(t, y, opts)
 
   dvel = [udot_E; vdot_E; wdot_E]; % change in u, v, and w
 
-  % TODO -> this
   control_moment = [r*(f2 + f3 - f1 - f4);
                     r*(-f1 - f2 + f3 + f4);
                     k*(f2 + f4 - f1 - f3) ];
