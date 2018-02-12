@@ -17,8 +17,9 @@ omega0 = [0 0 0]; % body angular velocity
 
 % options and starting conditions
 inital_conds = [x0, vel0, pose0, omega0];
-opts = struct('aero',                  false, ... % no aerodynamic forces
-              'control_motor', false);
+
+opts = struct('aero',          false, ... % no aerodynamic forces
+              'control_motor', false); % no motor control
 % call ode45
 [t, y] = ode45(@(t, y) quadcopter(t, y, opts), [0, tmax], inital_conds);
 r     = y(:, 1:3);
