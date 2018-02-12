@@ -1,4 +1,20 @@
 function results = linear_quadcopter(t, y, opts, linearization_origin)
+  % Linearized quadcopter model
+  % reports deltas from the hover state (linearization_origin)
+
+  % OUTPUTS
+  % deltaPDot, deltaQDot, deltaRDot
+  % deltaUEdot, deltaVEdot, deltaWEdot
+  % deltaThetaDot, deltaPhiDot, deltaPsiDot
+
+  % PARAMS
+  % opts -> options struct
+  % linearization_origin -> conditions we've linearized about
+  % deltaF1, deltaF2, deltaF3, deltaF4
+  % deltaTheta, deltaPhi
+  % deltaQ, deltaP, deltaR
+  control_motor = opts.control_motor;
+
   m = 0.068;     % kg
   g = 9.81;      % m/s^2
   k = 0.0024;    % m
@@ -8,18 +24,6 @@ function results = linear_quadcopter(t, y, opts, linearization_origin)
   Ix = 6.8e-5; % moments of inertia about the body axes
   Iy = 9.2e-5;
   Iz = 1.35e-4;
-
-  % OUTPUTS
-  % deltaPDot, deltaQDot, deltaRDot
-  % deltaUEdot, deltaVEdot, deltaWEdot
-  % deltaThetaDot, deltaPhiDot, deltaPsiDot
-
-  % PARAMS
-  % opts -> currently unused
-  % linearization_origin -> conditions we've linearized about
-  % deltaF1, deltaF2, deltaF3, deltaF4
-  % deltaTheta, deltaPhi
-  % deltaQ, deltaP, deltaR
 
   % origin points
   pos0   = linearization_origin(1:3);
@@ -32,11 +36,6 @@ function results = linear_quadcopter(t, y, opts, linearization_origin)
 
   deltaPos   = y(1:3); % unused
 
-  % just hardcoding the motors for now
-  deltaF1 = 0;
-  deltaF2 = 0;
-  deltaF3 = 0;
-  deltaF4 = 0;
 
   % velocity
   deltaVel   = y(4:6);
@@ -56,11 +55,26 @@ function results = linear_quadcopter(t, y, opts, linearization_origin)
   deltaQ = deltaOmega(2);
   deltaR = deltaOmega(3);
 
+  % just hardcoding the motors for now
+  if control_motor
+    deltaMotors = linearized_motor_control(deltaP, deltaQ, deltaR, r_dist, k);
+    deltaF1 = deltaMotors(1);
+    deltaF2 = deltaMotors(2);
+    deltaF3 = deltaMotors(3);
+    deltaF4 = deltaMotors(4);
+  else
+    deltaF1 = 0;
+    deltaF2 = 0;
+    deltaF3 = 0;
+    deltaF4 = 0;
+  end
+
+
   phi   = deltaPhi   + phi0;
   theta = deltaTheta + theta0;
   psi   = deltaPsi   + psi0;
-  Qeb = R3(-psi)*R2(-theta)*R1(-phi); % transform body vector to inertial vector
-  Qbe = R3(psi)*R2(theta)*R1(phi);    % transform inertial vector to body vector
+  Qeb   = R3(-psi)*R2(-theta)*R1(-phi); % transform body vector to inertial vector
+  Qbe   = R3(psi)*R2(theta)*R1(phi);    % transform inertial vector to body vector
 
   deltaPosDot = Qeb * deltaVel; % change in position
 
