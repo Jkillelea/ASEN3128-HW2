@@ -56,7 +56,7 @@ function results = linear_quadcopter(t, y, opts, linearization_origin)
 
   % just hardcoding the motors for now
   if control_motor
-    deltaMotors = linearized_motor_control(r_dist, k, y);
+    deltaMotors = linearized_motor_control(r_dist, k, Ix, Iy, Iz, y);
     deltaF1 = deltaMotors(1);
     deltaF2 = deltaMotors(2);
     deltaF3 = deltaMotors(3);

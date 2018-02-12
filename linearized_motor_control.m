@@ -1,16 +1,16 @@
-function delta_motors = linearized_motor_control(r_dist, k, state)
+function delta_motors = linearized_motor_control(r_dist, k, Ix, Iy, Iz, state)
   % Control moments are 0.004*rotation_rate in their respoective directions
-  gain = 0.004;
-  K1 = 1.36e-3;
-  K2 = 10.625e-3;
-  % TODO: These two - derive!
-  K3 = 0.00184;
-  K4 = 0.014375;
+  yawGain = 0.004;
 
-  deltaVel = state(4:6);
-  deltaUE  = deltaVel(1);
-  deltaVE  = deltaVel(2);
-  deltaWE  = deltaVel(3);
+  tau  = 0.1;
+  zeta = 0.8;
+  wn   = 1/(tau*zeta);
+
+  K1 = 2*zeta*wn*Ix;
+  K2 = (wn^2)*Ix;
+
+  K3 = 2*zeta*wn*Iy;
+  K4 = (wn^2)*Iy;
 
   deltaPose  = state(7:9);
   deltaPhi   = deltaPose(1);
@@ -32,7 +32,7 @@ function delta_motors = linearized_motor_control(r_dist, k, state)
 
   torqe_command = [ deltaLc;
                     deltaMc;
-                   -gain*deltaR;
+                   -yawGain*deltaR;
                     0 ]; % desired Z control force - zero.
                          % note that the control force that counters weight
                          % was accounted for in the original linearization
