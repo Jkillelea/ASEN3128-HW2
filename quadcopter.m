@@ -37,7 +37,7 @@ function results = quadcopter(t, y, opts)
   r     = omega(3); % yaw   rate
 
   if control_motor
-    [f1, f2, f3, f4] = motor_control(m, g, y);
+    [f1, f2, f3, f4] = motor_control(m, g, Ix, Iy, Iz, y);
   else
     f1 = m*g/4;
     f2 = m*g/4;
