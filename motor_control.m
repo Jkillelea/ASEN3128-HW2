@@ -18,7 +18,6 @@ function [f1, f2, f3, f4] = motor_control(m, g, Ix, Iy, Iz, state)
   pose  = state(7:9);
   phi   = pose(1);
   theta = pose(2);
-  psi   = pose(3);
 
   omega = state(10:12);
   p = omega(1);
@@ -42,7 +41,7 @@ function [f1, f2, f3, f4] = motor_control(m, g, Ix, Iy, Iz, state)
                         % of the equation set
   delta_motors = matrix\torqe_command;
 
-  f1 = m*g/4; % weight
+  f1 = m*g/4; % counteract weight
   f2 = m*g/4;
   f3 = m*g/4;
   f4 = m*g/4;
