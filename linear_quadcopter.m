@@ -36,12 +36,11 @@ function results = linear_quadcopter(t, y, opts, linearization_origin)
 
   deltaPos   = y(1:3); % unused
 
-
   % velocity
-  deltaVel   = y(4:6);
-  deltaUEdot = deltaVel(1);
-  deltaVEdot = deltaVel(2);
-  deltaWEdot = deltaVel(3);
+  deltaVel = y(4:6);
+  deltaUE  = deltaVel(1);
+  deltaVE  = deltaVel(2);
+  deltaWE  = deltaVel(3);
 
   % euler angle pose
   deltaPose  = y(7:9);
@@ -57,7 +56,7 @@ function results = linear_quadcopter(t, y, opts, linearization_origin)
 
   % just hardcoding the motors for now
   if control_motor
-    deltaMotors = linearized_motor_control(deltaP, deltaQ, deltaR, r_dist, k);
+    deltaMotors = linearized_motor_control(r_dist, k, y);
     deltaF1 = deltaMotors(1);
     deltaF2 = deltaMotors(2);
     deltaF3 = deltaMotors(3);
