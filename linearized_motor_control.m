@@ -13,17 +13,17 @@ function delta_motors = linearized_motor_control(r_dist, k, Ix, Iy, Iz, state)
   K4 = (wn^2)*Iy;
 
   deltaPose  = state(7:9);
+  deltaOmega = state(10:12);
+
   deltaPhi   = deltaPose(1);
   deltaTheta = deltaPose(2);
   deltaPsi   = deltaPose(3);
+  deltaP     = deltaOmega(1);
+  deltaQ     = deltaOmega(2);
+  deltaR     = deltaOmega(3);
 
-  deltaOmega = state(10:12);
-  deltaP = deltaOmega(1);
-  deltaQ = deltaOmega(2);
-  deltaR = deltaOmega(3);
-
-  deltaLc = -K1 * deltaP -K2 * deltaPhi;
-  deltaMc = -K3 * deltaQ -K4 * deltaTheta;
+  deltaLc = -K1*deltaP - K2*deltaPhi;
+  deltaMc = -K3*deltaQ - K4*deltaTheta;
 
   matrix = [(r_dist)*[-1  1  1 -1];
             (r_dist)*[-1 -1  1  1];
