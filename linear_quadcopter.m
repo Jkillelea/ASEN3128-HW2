@@ -1,4 +1,4 @@
-function results = linear_quadcopter(t, y, opts)
+function results = linear_quadcopter(t, y, opts, linearization_origin)
   m = 0.068;     % kg
   g = 9.81;      % m/s^2
   k = 0.0024;    % m
@@ -16,12 +16,21 @@ function results = linear_quadcopter(t, y, opts)
 
   % PARAMS
   % opts -> currently unused
+  % linearization_origin -> conditions we've linearized about
   % deltaF1, deltaF2, deltaF3, deltaF4
   % deltaTheta, deltaPhi
   % deltaQ, deltaP, deltaR
 
-  % deltaPos   = y(1:3); % unused
-  deltaPosDot = [0; 0; 0];
+  % origin points
+  pos0   = linearization_origin(1:3);
+  vel0   = linearization_origin(1:3);
+  pose0  = linearization_origin(1:3);
+  omega0 = linearization_origin(1:3);
+  phi0   = pose0(1);
+  theta0 = pose0(2);
+  psi0   = pose0(3);
+
+  deltaPos   = y(1:3); % unused
 
   % just hardcoding the motors for now
   deltaF1 = 0;
@@ -46,6 +55,14 @@ function results = linear_quadcopter(t, y, opts)
   deltaP = deltaOmega(1);
   deltaQ = deltaOmega(2);
   deltaR = deltaOmega(3);
+
+  phi   = deltaPhi   + phi0;
+  theta = deltaTheta + theta0;
+  psi   = deltaPsi   + psi0;
+  Qeb = R3(-psi)*R2(-theta)*R1(-phi); % transform body vector to inertial vector
+  Qbe = R3(psi)*R2(theta)*R1(phi);    % transform inertial vector to body vector
+
+  deltaPosDot = Qeb * deltaVel; % change in position
 
   % I'm not being consistent with my camelCase since I want the names to all look distinct.
   deltaUEdot = -g * deltaTheta;
