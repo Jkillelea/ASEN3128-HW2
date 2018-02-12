@@ -32,7 +32,7 @@ function delta_motors = linearized_motor_control(r_dist, k, state)
 
   torqe_command = [ deltaLc;
                     deltaMc;
-                    -gain*deltaR;
+                   -gain*deltaR;
                     0 ]; % desired Z control force - zero.
                          % note that the control force that counters weight
                          % was accounted for in the original linearization
