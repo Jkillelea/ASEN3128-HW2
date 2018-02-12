@@ -13,7 +13,7 @@ function plotQuadCopterDynamics(t, data)
   plot(t, r(:, 3), 'DisplayName', 'D', 'LineWidth', 2)
   xlabel('Time (sec)');
   ylabel('Displacement (m)');
-  legend('show', 'location', 'southwest')
+  legend('show', 'location', 'northwest')
 
   subplot(2, 2, 2); hold on;
   plot(t, v(:, 1), 'DisplayName', 'u', 'LineWidth', 2) % body x velocity
@@ -29,7 +29,7 @@ function plotQuadCopterDynamics(t, data)
   plot(t, pose(:, 3), 'DisplayName', '\Psi',   'LineWidth', 2)
   xlabel('Time (sec)');
   ylabel('Euler Angles');
-  legend('show', 'location', 'southwest')
+  legend('show', 'location', 'northeast')
 
   subplot(2, 2, 4); hold on;
   plot(t, omega(:, 1), 'DisplayName', 'p', 'LineWidth', 2)
@@ -37,5 +37,5 @@ function plotQuadCopterDynamics(t, data)
   plot(t, omega(:, 3), 'DisplayName', 'r', 'LineWidth', 2)
   xlabel('Time (sec)');
   ylabel('Body Angular Velocity (rad/s)');
-  legend('show', 'location', 'southwest')
+  legend('show', 'location', 'northeast')
 end
