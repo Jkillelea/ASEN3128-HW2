@@ -45,8 +45,8 @@ function results = quadcopter(t, y, opts)
     f4 = m*g/4;
   end
 
-  Qeb = R3(-psi)*R2(-theta)*R1(-phi); % transform body vector to inertial vector
-  Qbe = R3(psi)*R2(theta)*R1(phi);    % transform inertial vector to body vector
+  Qeb = R1(-phi)*R2(-theta)*R3(-psi); % transform body vector to inertial vector
+  Qbe = R1(phi)*R2(theta)*R3(psi);    % transform body vector to inertial vector
 
   dr = Qeb * vel; % inertial velocity is the change in position vector
 
